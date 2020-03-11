@@ -94,8 +94,8 @@ abstract class SuplClient {
       checkNotNull(response, "SUPL POS null");
 
       ULP_PDU suplPosMessage = ULP_PDU.fromPerUnaligned(response);
-      checkState(suplPosMessage.getMessage().isMsSUPLPOS());
       logMessage("SUPL POS received from server", suplPosMessage);
+      checkState(suplPosMessage.getMessage().isMsSUPLPOS());
       SUPLPOS suplPos = suplPosMessage.getMessage().getMsSUPLPOS();
       validateAssistanceData(suplPos);
 

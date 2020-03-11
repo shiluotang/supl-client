@@ -21,11 +21,24 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLContextSpi;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * A TCP client that is used to send and receive SUPL request and responses by the SUPL client. The
@@ -45,7 +58,7 @@ final class SuplTcpConnection {
   private Socket socket;
   private BufferedInputStream bufferedInputStream;
 
-  public SuplTcpConnection(SuplConnectionRequest request) throws UnknownHostException, IOException {
+  public SuplTcpConnection(SuplConnectionRequest request) throws UnknownHostException, IOException, KeyManagementException, NoSuchAlgorithmException {
     socket = createSocket(request);
     socket.setSoTimeout(READ_TIMEOUT_MILLIS);
     socket.setReceiveBufferSize(RESPONSE_BUFFER_SIZE);
@@ -97,7 +110,25 @@ final class SuplTcpConnection {
     socket.close();
   }
 
-  private static Socket createSocket(SuplConnectionRequest request) throws IOException {
+  private static Socket createSocket(SuplConnectionRequest request) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    SSLContext ctx = SSLContext.getInstance("TLS");
+    TrustManager tm = new X509TrustManager() {
+    	private X509Certificate[] chain;
+
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        	this.chain = chain;
+        }
+
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        }
+
+        public X509Certificate[] getAcceptedIssuers() {
+            return this.chain;
+        }
+    };
+    ctx.init(new javax.net.ssl.KeyManager[0], new TrustManager[] {tm}, new SecureRandom());
+    SSLContext.setDefault(ctx);
+    SSLSocketFactory factory = ctx.getSocketFactory();
     String host = request.getServerHost();
     int port = request.getServerPort();
     logger.info("Connecting to " + host + " on port " + port);
@@ -106,8 +137,9 @@ final class SuplTcpConnection {
       Preconditions.checkState(
           SuplConstants.SuplServerConstants.SSL_PORTS.contains(port),
           "An SSL connection is requested on a non SSL port, this should not happen.");
-      SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+      // SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
       SSLSocket sslSocket = (SSLSocket) factory.createSocket(host, port);
+      sslSocket.setUseClientMode(true);
       sslSocket.startHandshake();
       return sslSocket;
     } else {

@@ -66,8 +66,9 @@ final class SuplLppClient extends SuplClient {
     A_GNSS_ProvideAssistanceData assistData =
         SuplLppClientHelper.getAssistanceDataFromSuplPos(message);
 
-    IonosphericModelProto ionoProto =
-        SuplLppClientHelper.buildIonoModelProto(
+    IonosphericModelProto ionoProto = null;
+    if (assistData.getGnss_CommonAssistData().getGnss_IonosphericModel() != null)
+    	ionoProto = SuplLppClientHelper.buildIonoModelProto(
             assistData.getGnss_CommonAssistData().getGnss_IonosphericModel().getKlobucharModel());
 
     GNSS_SystemTime gnssSystemTime =
@@ -88,12 +89,14 @@ final class SuplLppClient extends SuplClient {
               SuplLppClientHelper.generateGpsEphList(element.getGnss_NavigationModel(), gpsWeek));
           break;
         case glonass:
+        	if (element.getGnss_AuxiliaryInformation() != null) {
           Map<Integer, Integer> svidToFreqNumMap =
               SuplLppClientHelper.getGloSvidToFreqNumMap(
                   element.getGnss_AuxiliaryInformation().getGnss_ID_GLONASS());
           ephList.addAll(
               SuplLppClientHelper.generateGloEphList(
                   element.getGnss_NavigationModel(), moscowDate, svidToFreqNumMap));
+        	}
           break;
         case galileo:
           ephList.addAll(
