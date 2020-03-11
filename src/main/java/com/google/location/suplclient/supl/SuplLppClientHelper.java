@@ -311,8 +311,8 @@ class SuplLppClientHelper {
         .setTocS(clock.getNavToc().getInteger().intValue() * ScaleFactors.GPS_NAV_TOC)
         .setIodc(iod)
         .setIode(iod)
-        .setL2PDataFlag(orbit.getAddNAVparam().getEphemL2Pflag().getInteger().intValue() != 0)
-        .setCodeL2(orbit.getAddNAVparam().getEphemCodeOnL2().getInteger().intValue())
+        .setL2PDataFlag(orbit.getAddNAVparam() == null ? false : orbit.getAddNAVparam().getEphemL2Pflag().getInteger().intValue() != 0)
+        .setCodeL2(orbit.getAddNAVparam() == null ? 0 : orbit.getAddNAVparam().getEphemCodeOnL2().getInteger().intValue())
         .setKeplerianModel(keplerModel)
         .build();
   }

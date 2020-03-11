@@ -28,6 +28,7 @@ import com.google.location.suplclient.asn1.supl2.supl_start.SUPLSTART;
 import com.google.location.suplclient.asn1.supl2.ulp.ULP_PDU;
 import com.google.location.suplclient.asn1.supl2.ulp.UlpMessage;
 import com.google.location.suplclient.asn1.supl2.ulp_components.CellInfo;
+import com.google.location.suplclient.asn1.supl2.ulp_components.GsmCellInformation;
 import com.google.location.suplclient.asn1.supl2.ulp_components.LocationId;
 import com.google.location.suplclient.asn1.supl2.ulp_components.Position;
 import com.google.location.suplclient.asn1.supl2.ulp_components.Position.timestampType;
@@ -127,11 +128,16 @@ abstract class SuplMessagesGenerator {
         bits.set(i);
       }
     }
-    cellInfo
-        .getExtensionVer2_CellInfo_extension()
-        .setWlanAPToNewInstance()
-        .setApMACAddressToNewInstance()
-        .setValue(bits);
+    GsmCellInformation gsm = cellInfo.setGsmCellToNewInstance();
+    gsm.setRefMCCToNewInstance().setLong(999);
+    gsm.setRefMNCToNewInstance().setLong(99);
+    gsm.setRefLACToNewInstance().setLong(65535);
+    gsm.setRefCIToNewInstance().setLong(65535);
+    //cellInfo
+    //    .getExtensionVer2_CellInfo_extension()
+    //    .setWlanAPToNewInstance()
+    //    .setApMACAddressToNewInstance()
+    //    .setValue(bits);
     locationId.setStatusToNewInstance().setValue(Status.Value.current);
 
     return createUlpPdu(message, ipAddress);
@@ -234,11 +240,17 @@ abstract class SuplMessagesGenerator {
         bits.set(i);
       }
     }
-    cellInfo
-        .getExtensionVer2_CellInfo_extension()
-        .setWlanAPToNewInstance()
-        .setApMACAddressToNewInstance()
-        .setValue(bits);
+	GsmCellInformation gsm = cellInfo.setGsmCellToNewInstance();
+    gsm.setRefMCCToNewInstance().setLong(999);
+    gsm.setRefMNCToNewInstance().setLong(99);
+    gsm.setRefLACToNewInstance().setLong(65535);
+    gsm.setRefCIToNewInstance().setLong(65535);
+
+    //cellInfo
+    //    .getExtensionVer2_CellInfo_extension()
+    //    .setWlanAPToNewInstance()
+    //    .setApMACAddressToNewInstance()
+    //    .setValue(bits);
     locationId.setStatusToNewInstance().setValue(Status.Value.current);
 
     Position pos = suplPosInit.setPositionToNewInstance();
@@ -396,7 +408,7 @@ abstract class SuplMessagesGenerator {
 
   /** Encodes a ULP_PDU message into bytes and sets the length field. */
   public byte[] encodeUlp(ULP_PDU message) {
-    logger.info("Encoding ULP \n" + message);
+    //logger.info("Encoding ULP \n" + message);
     message.setLengthToNewInstance();
     message.getLength().setInteger(BigInteger.ZERO);
     PacketBuilder messageBuilder = new PacketBuilder();

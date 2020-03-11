@@ -39,7 +39,7 @@ public class SuplConstants {
   /** A container for Google SUPL server related constants */
   static class SuplServerConstants {
     static final ImmutableSet<Integer> SSL_PORTS =
-        ImmutableSet.of(7275 /* SSL_PROD_PORT */, 7279 /* SSL_DEV_PORT */);
+        ImmutableSet.of(7275 /* SSL_PROD_PORT */, 7279 /* SSL_DEV_PORT */, 9275);
     static final ImmutableSet<Integer> NON_SSL_PORTS =
         ImmutableSet.of(7276 /* NON_SSL_PROD_PORT */, 7280 /* NON_SSL_DEV_PORT */);
   }
